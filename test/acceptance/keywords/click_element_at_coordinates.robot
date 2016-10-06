@@ -15,6 +15,7 @@ Click Element At Coordinates
 *** Keywords ***
 Initialize page
     [Documentation]    Initialize page
+    [Tags]  Known Issue Internet Explorer    Known Issue Safari
     Reload Page
     Element Text Should Be    outputX    initial outputX
     Element Text Should Be    outputY    initial outputY

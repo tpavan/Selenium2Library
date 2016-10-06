@@ -8,6 +8,15 @@ from tempfile import TemporaryFile
 
 from run_unit_tests import run_unit_tests
 
+REBOT_ARGS = [
+    '--outputdir', '%(outdir)s',
+    '--name', '%(browser)sSPAcceptanceSPTests',
+    '--escape', 'space:SP',
+    '--critical', 'regression',
+    '--noncritical', 'inprogress',
+    '--noncritical', 'known_issue_-_%(pyVersion)s',
+    '--noncritical', 'known_issue_%(browser)s',
+]
 ROBOT_ARGS = [
     '--doc', 'SeleniumSPacceptanceSPtestsSPwithSP%(browser)s',
     '--outputdir', '%(outdir)s',
@@ -16,26 +25,39 @@ ROBOT_ARGS = [
     '--escape', 'space:SP',
     '--report', 'none',
     '--log', 'none',
-    #'--suite', 'Acceptance.Keywords.Textfields',
     '--loglevel', 'DEBUG',
     '--pythonpath', '%(pythonpath)s',
-    '--noncritical', 'known_issue_-_%(pyVersion)s',
-    '--noncritical', 'known_issue_-_%(browser)s',
+    '--noncritical', 'known_issue_%(pyVersion)s',
+    '--noncritical', 'known_issue_%(browser)s',
 ]
-REBOT_ARGS = [
-    '--outputdir', '%(outdir)s',
-    '--name', '%(browser)sSPAcceptanceSPTests',
-    '--escape', 'space:SP',
-    '--critical', 'regression',
-    '--noncritical', 'inprogress',
-    '--noncritical', 'known_issue_-_%(pyVersion)s',
-    '--noncritical', 'known_issue_-_%(browser)s',
-]
-ARG_VALUES = {'outdir': env.RESULTS_DIR, 'pythonpath': ':'.join((env.SRC_DIR, env.TEST_LIBS_DIR))}
+ARG_VALUES = {
+    'outdir': env.RESULTS_DIR,
+    'pythonpath': ':'.join((env.SRC_DIR, env.TEST_LIBS_DIR))
+}
+
 
 def acceptance_tests(interpreter, browser, args):
     ARG_VALUES['browser'] = browser.replace('*', '')
     ARG_VALUES['pyVersion'] = interpreter + sys.version[:3]
+    ARG_VALUES['sauceUserName'] = env.SAUCE_USERNAME
+    ARG_VALUES['sauceAccessKey'] = env.SAUCE_ACCESS_KEY
+    ARG_VALUES['travisJobNumber'] = env.TRAVIS_JOB_NUMBER
+
+    if env.TRAVIS:
+        ROBOT_ARGS.extend(['--variable', 'SAUCE_USERNAME:%(sauceUserName)s'])
+        ROBOT_ARGS.extend(['--variable', 'SAUCE_ACCESS_KEY:%(sauceAccessKey)s'])
+        if env.BROWSER != "firefox":
+            ROBOT_ARGS.extend(
+                ['--variable',
+                 'DESIRED_CAPABILITIES:build:%(travisJobNumber)s-%(browser)s,tunnel-identifier:%(travisJobNumber)s'
+                 ]
+            )
+            ROBOT_ARGS.extend(
+                [
+                    '--variable',
+                    'REMOTE_URL:http://%(sauceUserName)s:%(sauceAccessKey)s@ondemand.saucelabs.com:80/wd/hub'
+                 ]
+            )
     start_http_server()
     runner = {'python': 'pybot', 'jython': 'jybot', 'ipy': 'ipybot'}[interpreter]
     if os.sep == '\\':
@@ -44,10 +66,12 @@ def acceptance_tests(interpreter, browser, args):
     stop_http_server()
     return process_output(args)
 
+
 def start_http_server():
     server_output = TemporaryFile()
-    Popen(['python', env.HTTP_SERVER_FILE ,'start'],
+    Popen(['python', env.HTTP_SERVER_FILE, 'start'],
           stdout=server_output, stderr=server_output)
+
 
 def execute_tests(runner, args):
     if not os.path.exists(env.RESULTS_DIR):
@@ -58,8 +82,10 @@ def execute_tests(runner, args):
     syslog = os.path.join(env.RESULTS_DIR, 'syslog.txt')
     call(command, shell=os.sep=='\\', env=dict(os.environ, ROBOT_SYSLOG_FILE=syslog))
 
+
 def stop_http_server():
     call(['python', env.HTTP_SERVER_FILE, 'stop'])
+
 
 def process_output(args):
     print()
@@ -67,8 +93,8 @@ def process_output(args):
         call(['python', os.path.join(env.RESOURCES_DIR, 'statuschecker.py'),
              os.path.join(env.RESULTS_DIR, 'output.xml')])
     rebot = 'rebot' if os.sep == '/' else 'rebot.bat'
-    rebot_cmd = [rebot] + [ arg % ARG_VALUES for arg in REBOT_ARGS ] + args + \
-                [os.path.join(ARG_VALUES['outdir'], 'output.xml') ]
+    rebot_cmd = [rebot] + [arg % ARG_VALUES for arg in REBOT_ARGS] + args + \
+                [os.path.join(ARG_VALUES['outdir'], 'output.xml')]
     print('')
     print('Starting output processing with command:\n' + ' '.join(rebot_cmd))
     rc = call(rebot_cmd, env=os.environ)
@@ -78,21 +104,25 @@ def process_output(args):
         print('%d critical test%s failed' % (rc, 's' if rc != 1 else ''))
     return rc
 
+
 def _has_robot_27():
     try:
         from robot.result import ExecutionResult
-    except:
+    except ImportError:
         return False
     return True
 
+
 def _exit(rc):
     sys.exit(rc)
+
 
 def _help():
     print('Usage:  python run_tests.py python|jython browser [options]')
     print()
     print('See README.txt for details.')
     return 255
+
 
 def _run_unit_tests():
     print('Running unit tests')
@@ -104,7 +134,7 @@ def _run_unit_tests():
     return failures
 
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     if not len(sys.argv) > 2:
         _exit(_help())
     unit_failures = _run_unit_tests()

@@ -10,6 +10,7 @@ Resource          resource.robot
 *** Test Cases ***
 Popup Windows Created With Javascript
     [Documentation]    Popup Windows Created With Javascript
+    [Tags]    Known Issue Internet Explorer
     Cannot Be Executed in IE
     Open Popup Window, Select It And Verify    myName
     Do Action In Popup Window And Verify
@@ -17,7 +18,6 @@ Popup Windows Created With Javascript
 
 Get Window Titles
     [Documentation]    Get Window Titles
-    [Tags]    Known Issue - TravisCI
     ${exp_titles}=    Create List    Click link to show a popup window    Original
     Click Link    my popup
     ${titles}=    Get Window Titles
@@ -39,6 +39,7 @@ Get Window Identifiers
 
 Get and Set Window Size
     [Documentation]    Get and Set Window Size
+    [Tags]  Known Issue Chrome    Known Issue Internet Explorer    Known Issue Safari
     ${win_width}=    Set Variable    ${600}
     ${win_height}=    Set Variable    ${800}
     Set Window Size    ${win_width}    ${win_height}
@@ -48,6 +49,7 @@ Get and Set Window Size
 
 Get and Set Window Position
     [Documentation]    Get and Set Window Position
+    [Tags]  Known Issue Chrome    Known Issue Safari
     ${position_x}=    Set Variable    ${100}
     ${position_y}=    Set Variable    ${100}
     Set Window Position    ${position_x}    ${position_y}
@@ -57,13 +59,14 @@ Get and Set Window Position
 
 Select Window By Title After Close Window
     [Documentation]    Select Window By Title After Close Window
+    [Tags]    Known Issue Internet Explorer    Known Issue Safari
     Cannot Be Executed in IE
     Open Popup Window, Select It And Verify    myName
     Close Popup Window And Select Main Window By Title
 
 Get Window Titles After Close Window
     [Documentation]    Get Window Titles After Close Window
-    [Tags]    Known Issue - TravisCI
+    [Tags]    Known Issue Internet Explorer
     Cannot Be Executed in IE
     Open Popup Window, Select It And Verify    myName
     Close Window
@@ -71,6 +74,7 @@ Get Window Titles After Close Window
 
 Select Window By Handle
     [Documentation]    Select Window By Handle
+    [Tags]    Known Issue Internet Explorer
     Cannot Be Executed in IE
     Click Link    my popup
     ${parent}=    Select Window    Original
@@ -85,6 +89,7 @@ Select Window By Handle
 
 Select Popup Window By Excluded List
     [Documentation]    Select Popup Window By Excluded List
+    [Tags]    Known Issue Internet Explorer
     Cannot Be Executed in IE
     @{excluded_handle_list}=    List Windows
     Click Link    my popup
@@ -96,6 +101,7 @@ Select Popup Window By Excluded List
 
 Select Window By Special Locator
     [Documentation]    Select Window By Special Locator
+    [Tags]    Known Issue Internet Explorer
     Cannot Be Executed in IE
     ${start}=    Select Window    self
     Click Link    my popup

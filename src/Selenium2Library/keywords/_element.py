@@ -587,7 +587,6 @@ return !element.dispatchEvent(evt);
 
     def page_should_contain_image(self, locator, message='', loglevel='INFO'):
         """Verifies image identified by `locator` is found from current page.
-
         See `Page Should Contain Element` for explanation about `message` and
         `loglevel` arguments.
 
